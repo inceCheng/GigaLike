@@ -37,3 +37,5 @@ src/main/resources/application-local.yml
 src/main/resources/application-local.properties
 src/main/resources/application-dev.yml
 src/main/resources/application-dev.properties
+# SpecStory explanation file
+.specstory/.what-is-this.md
