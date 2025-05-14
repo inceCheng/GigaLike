@@ -1,0 +1,34 @@
+spring:
+  profiles:
+    active: local  # 默认使用本地配置
+  application:
+    name: GigaChat
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+# springdoc-openapi
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.ince.gigalike.controller
+# knife4j
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.ince.inceaiagent: DEBUG
+    org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor: debug
+

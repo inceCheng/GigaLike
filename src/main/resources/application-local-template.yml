@@ -1,0 +1,14 @@
+# 本地开发环境配置
+# 注意：此文件为模板文件，开发者需要自行修改，复制一份到application-local.yml中，修改为自己的配置
+spring:
+  # DataSource Config
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/your_db_name?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: your_db_username
+    password: your_db_password
+# mybatis-plus
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
