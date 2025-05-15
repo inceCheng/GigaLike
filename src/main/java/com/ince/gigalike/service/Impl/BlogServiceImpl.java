@@ -13,6 +13,7 @@ import com.ince.gigalike.service.BlogService;
 import com.ince.gigalike.mapper.BlogMapper;
 import com.ince.gigalike.service.ThumbService;
 import com.ince.gigalike.service.UserService;
+import com.ince.gigalike.utils.RedisKeyUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Lazy;
@@ -57,13 +58,13 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog>
         Map<Long, Boolean> blogIdHasThumbMap = new HashMap<>();
         if (ObjUtil.isNotEmpty(loginUser)) {
             List<Object> blogIdList = blogList.stream().map(blog -> blog.getId().toString()).collect(Collectors.toList());
-            // 获取用户点赞记录列表，查询条件为用户 ID
+            // 获取点赞
             List<Object> thumbList = redisTemplate.opsForHash().multiGet(ThumbConstant.USER_THUMB_KEY_PREFIX + loginUser.getId(), blogIdList);
-            for (Object object : thumbList) {
-                if (object == null){
+            for (int i = 0; i < thumbList.size(); i++) {
+                if (thumbList.get(i) == null) {
                     continue;
                 }
-                blogIdHasThumbMap.put(Long.valueOf((String) object), true);
+                blogIdHasThumbMap.put(Long.valueOf(blogIdList.get(i).toString()), true);
             }
         }
         // 遍历博客列表，将每个博客对象转换为 BlogVO 对象，并根据 blogIdHasThumbMap 中的点赞记录设置 hasThumb 属性。
