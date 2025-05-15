@@ -7,6 +7,31 @@ spring:
     url: jdbc:mysql://localhost:3306/your_db_name?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: your_db_username
     password: your_db_password
+    # Druid specific configurations (optional, Spring Boot auto-configures most)
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      filters: stat,wall,log4j
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+  data:
+    # Redis 配置
+    redis:
+      database: 0
+      host: xxx
+      password: xxx
+      timeout: 5000
+      port: 6379
 # mybatis-plus
 mybatis-plus:
   configuration:

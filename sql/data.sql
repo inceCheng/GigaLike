@@ -239,3 +239,86 @@ INSERT INTO thumb (userId, blogId, createTime) VALUES
 -- 如需更新博客文章的点赞数以匹配实际点赞记录数，可以运行以下SQL
 UPDATE blog SET thumbCount = (SELECT COUNT(*) FROM thumb WHERE thumb.blogId = blog.id) WHERE id IN (1, 2, 3, 4, 5, 6, 7);
 
+-- 添加新用户数据
+INSERT INTO users (
+    username, password, email, display_name, avatar_url, bio,
+    status, email_verified, role, locale, timezone,
+    createtime, updatetime, last_login_at,
+    social_provider, social_id, metadata
+) VALUES (
+    'testuser1',
+    'e10adc3949ba59abbe56e057f20f883e', -- MD5加密的"123456"
+    'testuser1@example.com',
+    '测试用户一号',
+    'https://cdn.example.com/avatars/testuser1.png',
+    '我是一个测试用户，喜欢写代码。',
+    'ACTIVE',
+    1,
+    'USER',
+    'zh-CN',
+    'Asia/Shanghai',
+    NOW() - INTERVAL 2 DAY,
+    NOW(),
+    NOW() - INTERVAL 2 HOUR,
+    NULL,
+    NULL,
+    JSON_OBJECT('interests', 'coding, testing')
+), (
+    'testuser2',
+    'e10adc3949ba59abbe56e057f20f883e', -- MD5加密的"123456"
+    'testuser2@example.com',
+    '测试用户二号',
+    'https://cdn.example.com/avatars/testuser2.png',
+    '另一个测试用户，专注于API测试。',
+    'ACTIVE',
+    1,
+    'USER',
+    'en-US',
+    'America/New_York',
+    NOW() - INTERVAL 1 DAY,
+    NOW(),
+    NOW() - INTERVAL 1 HOUR,
+    NULL,
+    NULL,
+    JSON_OBJECT('specialty', 'API testing', 'experience', '3 years')
+);
+
+-- 假设新添加的 testuser1 的 id 是 6 (基于当前数据中用户数量为5)
+-- 假设新添加的 testuser2 的 id 是 7
+
+-- 为新用户和现有用户添加博客数据
+INSERT INTO blog (userId, title, coverImg, content, thumbCount, createTime, updateTime) VALUES
+    (6, '我的第一个博客', 'https://cdn.example.com/blogs/first-post.jpg',
+     '<h1>欢迎来到我的博客！</h1><p>这是我使用GigaLike发布的第一篇博客。</p>',
+     0, NOW() - INTERVAL 12 HOUR, NOW()),
+    (6, '学习SQL的心得', 'https://cdn.example.com/blogs/sql-learning.png',
+     '<h2>SQL学习之旅</h2><p>最近在学习SQL，感觉非常有趣且实用...</p>',
+     0, NOW() - INTERVAL 6 HOUR, NOW()),
+    (7, 'API测试的重要性', 'https://cdn.example.com/blogs/api-testing.jpg',
+     '<h1>为什么API测试至关重要</h1><p>API是现代软件架构的核心组件，确保其可靠性非常关键...</p>',
+     0, NOW() - INTERVAL 10 HOUR, NOW()),
+    (2, '我最喜欢的编程语言', 'https://cdn.example.com/blogs/fav-lang.png', -- johndoe 的新博客
+     '<h1>我最爱的编程语言探讨</h1><p>多年编程下来，我对不同语言有了自己的看法...</p>',
+     0, NOW() - INTERVAL 1 DAY, NOW());
+
+-- 假设新添加的博客 ID 如下：
+-- "我的第一个博客" (testuser1) ID: 8
+-- "学习SQL的心得" (testuser1) ID: 9
+-- "API测试的重要性" (testuser2) ID: 10
+-- "我最喜欢的编程语言" (johndoe) ID: 11
+
+-- 添加新的点赞记录
+INSERT INTO thumb (userId, blogId, createTime) VALUES
+    (1, 8, NOW() - INTERVAL 5 HOUR),   -- admin 点赞 testuser1 的 "我的第一个博客"
+    (2, 10, NOW() - INTERVAL 4 HOUR),  -- johndoe 点赞 testuser2 的 "API测试的重要性"
+    (6, 1, NOW() - INTERVAL 3 HOUR),   -- testuser1 点赞 admin 的 "系统更新公告"
+    (6, 7, NOW() - INTERVAL 2 HOUR),   -- testuser1 点赞 github_12345 的 "GitHub Actions实战教程"
+    (7, 3, NOW() - INTERVAL 1 HOUR),   -- testuser2 点赞 johndoe 的 "全栈开发入门指南"
+    (7, 11, NOW() - INTERVAL 30 MINUTE), -- testuser2 点赞 johndoe 的 "我最喜欢的编程语言"
+    (3, 8, NOW() - INTERVAL 1 HOUR); -- github_12345 点赞 testuser1 的 "我的第一个博客"
+
+-- 更新新博客文章的点赞数
+-- 注意：这里的博客ID (8, 9, 10, 11) 是基于前面插入的假设。
+-- 在实际应用中，应该使用 last_insert_id() 或其他机制获取真实的ID。
+UPDATE blog SET thumbCount = (SELECT COUNT(*) FROM thumb WHERE thumb.blogId = blog.id) WHERE id IN (8, 9, 10, 11);
+
