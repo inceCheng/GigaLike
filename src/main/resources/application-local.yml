@@ -4,9 +4,12 @@ spring:
   # DataSource Config
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://43.134.56.239:3306/gigalikedb?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
-    username: inceCheng
-    password: YEpYGLpRGwn2pNJG
+#    url: jdbc:mysql://43.134.56.239:3306/gigalikedb?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+#    username: inceCheng
+#    password: YEpYGLpRGwn2pNJG
+    url: jdbc:mysql://localhost:3306/gigalikedb?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
     # Druid specific configurations (optional, Spring Boot auto-configures most)
     type: com.alibaba.druid.pool.DruidDataSource
     druid:

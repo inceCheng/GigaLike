@@ -14,6 +14,7 @@ import com.ince.gigalike.utils.RedisKeyUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.pulsar.client.api.PulsarClientException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.pulsar.core.PulsarTemplate;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class ThumbServiceMQImpl extends ServiceImpl<ThumbMapper, Thumb> implemen
     private final PulsarTemplate<ThumbEvent> pulsarTemplate;
 
     @Override
-    public Boolean doThumb(DoThumbRequest doThumbRequest, HttpServletRequest request) {
+    public Boolean doThumb(DoThumbRequest doThumbRequest, HttpServletRequest request) throws PulsarClientException {
         if (doThumbRequest == null || doThumbRequest.getBlogId() == null) {
             throw new RuntimeException("参数错误");
         }
@@ -71,7 +72,7 @@ public class ThumbServiceMQImpl extends ServiceImpl<ThumbMapper, Thumb> implemen
     }
 
     @Override
-    public Boolean undoThumb(DoThumbRequest doThumbRequest, HttpServletRequest request) {
+    public Boolean undoThumb(DoThumbRequest doThumbRequest, HttpServletRequest request) throws PulsarClientException {
         if (doThumbRequest == null || doThumbRequest.getBlogId() == null) {
             throw new RuntimeException("参数错误");
         }

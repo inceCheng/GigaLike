@@ -4,6 +4,7 @@ import com.ince.gigalike.model.dto.DoThumbRequest;
 import com.ince.gigalike.model.entity.Thumb;
 import com.baomidou.mybatisplus.extension.service.IService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.pulsar.client.api.PulsarClientException;
 
 /**
  * @author inceCheng
@@ -19,7 +20,7 @@ public interface ThumbService extends IService<Thumb> {
      * @param request        request
      * @return {@link Boolean }
      */
-    Boolean doThumb(DoThumbRequest doThumbRequest, HttpServletRequest request);
+    Boolean doThumb(DoThumbRequest doThumbRequest, HttpServletRequest request) throws PulsarClientException;
 
     /**
      * 取消点赞
@@ -28,7 +29,7 @@ public interface ThumbService extends IService<Thumb> {
      * @param request        request
      * @return {@link Boolean }
      */
-    Boolean undoThumb(DoThumbRequest doThumbRequest, HttpServletRequest request);
+    Boolean undoThumb(DoThumbRequest doThumbRequest, HttpServletRequest request) throws PulsarClientException;
 
     /**
      * 是否点赞

@@ -7,6 +7,7 @@ import com.ince.gigalike.model.entity.Thumb;
 import com.ince.gigalike.service.ThumbService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.pulsar.client.api.PulsarClientException;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
@@ -78,11 +79,15 @@ public class ThumbReconcileJob {
     private void sendCompensationEvents(Long userId, Set<Long> blogIds) {  
         blogIds.forEach(blogId -> {  
             ThumbEvent thumbEvent = new ThumbEvent(userId, blogId, ThumbEvent.EventType.INCR, LocalDateTime.now());
-            pulsarTemplate.sendAsync("thumb-topic", thumbEvent)  
-                    .exceptionally(ex -> {  
-                        log.error("补偿事件发送失败: userId={}, blogId={}", userId, blogId, ex);  
-                        return null;  
-                    });  
+            try {
+                pulsarTemplate.sendAsync("thumb-topic", thumbEvent)
+                        .exceptionally(ex -> {
+                            log.error("补偿事件发送失败: userId={}, blogId={}", userId, blogId, ex);
+                            return null;
+                        });
+            } catch (PulsarClientException e) {
+                throw new RuntimeException(e);
+            }
         });  
     }  
 }

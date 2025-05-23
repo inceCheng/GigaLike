@@ -6,6 +6,7 @@ import com.ince.gigalike.service.ThumbService;
 import com.ince.gigalike.utils.ResultUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.pulsar.client.api.PulsarClientException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +26,7 @@ public class ThumbController {
      * @return
      */
     @PostMapping("/do")
-    public BaseResponse<Boolean> doThumb(@RequestBody DoThumbRequest doThumbRequest, HttpServletRequest request) {
+    public BaseResponse<Boolean> doThumb(@RequestBody DoThumbRequest doThumbRequest, HttpServletRequest request) throws PulsarClientException {
         Boolean success = thumbService.doThumb(doThumbRequest, request);
         return ResultUtils.success(success);
     }
@@ -38,7 +39,7 @@ public class ThumbController {
      * @return
      */
     @PostMapping("/undo")
-    public BaseResponse<Boolean> undoThumb(@RequestBody DoThumbRequest doThumbRequest, HttpServletRequest request) {
+    public BaseResponse<Boolean> undoThumb(@RequestBody DoThumbRequest doThumbRequest, HttpServletRequest request) throws PulsarClientException {
         Boolean success = thumbService.undoThumb(doThumbRequest, request);
         return ResultUtils.success(success);
     }
