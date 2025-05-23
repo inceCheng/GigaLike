@@ -2,18 +2,12 @@ package com.ince.gigalike.service.Impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ince.gigalike.constant.RedisLuaScriptConstant;
-import com.ince.gigalike.constant.ThumbConstant;
-import com.ince.gigalike.enums.ErrorCode;
 import com.ince.gigalike.enums.LuaStatusEnum;
-import com.ince.gigalike.exception.BusinessException;
 import com.ince.gigalike.listener.thumb.msg.ThumbEvent;
-import com.ince.gigalike.manage.cache.CacheManager;
 import com.ince.gigalike.mapper.ThumbMapper;
 import com.ince.gigalike.model.dto.DoThumbRequest;
-import com.ince.gigalike.model.entity.Blog;
 import com.ince.gigalike.model.entity.Thumb;
 import com.ince.gigalike.model.entity.User;
-import com.ince.gigalike.service.BlogService;
 import com.ince.gigalike.service.ThumbService;
 import com.ince.gigalike.service.UserService;
 import com.ince.gigalike.utils.RedisKeyUtil;
@@ -23,10 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.pulsar.core.PulsarTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Arrays;
 
 /**
  * @author inceCheng
@@ -56,7 +49,7 @@ public class ThumbServiceMQImpl extends ServiceImpl<ThumbMapper, Thumb> implemen
         // 执行 Lua 脚本，点赞存入 Redis
         long result = redisTemplate.execute(
                 RedisLuaScriptConstant.THUMB_SCRIPT_MQ,
-                List.of(userThumbKey),
+                Arrays.asList(userThumbKey),
                 blogId
         );
         if (LuaStatusEnum.FAIL.getValue() == result) {
@@ -89,7 +82,7 @@ public class ThumbServiceMQImpl extends ServiceImpl<ThumbMapper, Thumb> implemen
         // 执行 Lua 脚本，点赞记录从 Redis 删除
         long result = redisTemplate.execute(
                 RedisLuaScriptConstant.UNTHUMB_SCRIPT_MQ,
-                List.of(userThumbKey),
+                Arrays.asList(userThumbKey),
                 blogId
         );
         if (LuaStatusEnum.FAIL.getValue() == result) {

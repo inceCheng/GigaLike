@@ -19,7 +19,7 @@ import java.util.Set;
  */  
 @Component
 @Slf4j
-public class SyncThumb2DBCompensatoryJob {  
+public class SyncThumb2DBCompensatoryJob {
   
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
@@ -28,7 +28,7 @@ public class SyncThumb2DBCompensatoryJob {
     private SyncThumb2DBJob syncThumb2DBJob;  
   
 //    @Scheduled(cron = "0 0 2 * * *")
-    public void run() {
+    /*public void run() {
         log.info("开始补偿数据");
         Set<String> thumbKeys = redisTemplate.keys(RedisKeyUtil.getTempThumbKey("") + "*");
         Set<String> needHandleDataSet = new HashSet<>();
@@ -43,5 +43,5 @@ public class SyncThumb2DBCompensatoryJob {
             syncThumb2DBJob.syncThumb2DBByDate(date);
         }
         log.info("临时数据补偿完成");
-    }
+    }*/
 }

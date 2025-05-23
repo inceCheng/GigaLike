@@ -29,11 +29,20 @@ spring:
     redis:
       database: 0
       host: localhost
-      timeout: 5000
+      timeout: 10000
       port: 6379
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1
+          max-idle: 8
+          min-idle: 0
   session:
     store-type: redis # 明确指定存储类型为 Redis
-    timeout: 2592000s # 设置会话超时时间为 30 天 (2592000 秒)
+    timeout: 1800s  # 30分钟
+    redis:
+      flush-mode: on_save
+      namespace: spring:session
 
 
 # mybatis-plus
