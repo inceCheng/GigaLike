@@ -7,6 +7,15 @@ server:
   port: 8123
   servlet:
     context-path: /api
+  forward-headers-strategy: framework
+  # 添加Tomcat配置
+  tomcat:
+    remoteip:
+      remote-ip-header: X-Forwarded-For
+      protocol-header: X-Forwarded-Proto
+      port-header: X-Forwarded-Port
+      host-header: X-Forwarded-Host
+      internal-proxies: 127\\.0\\.0\\.1
 # springdoc-openapi
 springdoc:
   swagger-ui:
@@ -30,5 +39,6 @@ logging:
   level:
     root: INFO
     com.ince.inceaiagent: DEBUG
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
     org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor: debug
 

@@ -113,4 +113,15 @@ public class User {
      */
     private Object metadata;
 
+    /**
+     * 最后登录IP地址
+     */
+    @TableField("last_login_ip")
+    private String lastLoginIp;
+
+    /**
+     * IP归属地
+     */
+    @TableField("last_login_ip_location")
+    private String lastLoginIpLocation;
 }

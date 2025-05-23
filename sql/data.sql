@@ -322,3 +322,6 @@ INSERT INTO thumb (userId, blogId, createTime) VALUES
 -- 在实际应用中，应该使用 last_insert_id() 或其他机制获取真实的ID。
 UPDATE blog SET thumbCount = (SELECT COUNT(*) FROM thumb WHERE thumb.blogId = blog.id) WHERE id IN (8, 9, 10, 11);
 
+ALTER TABLE users
+    ADD COLUMN last_login_ip VARCHAR(50) COMMENT '最后登录IP地址',
+    ADD COLUMN last_login_ip_location VARCHAR(100) COMMENT 'IP归属地';

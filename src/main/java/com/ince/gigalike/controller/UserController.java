@@ -1,8 +1,17 @@
 package com.ince.gigalike.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ince.gigalike.common.BaseResponse;
 import com.ince.gigalike.constant.UserConstant;
+import com.ince.gigalike.model.dto.UserLoginRequest;
+import com.ince.gigalike.model.dto.UserRegisterRequest;
+import com.ince.gigalike.model.dto.UserUpdatePasswordRequest;
+import com.ince.gigalike.model.dto.UserUpdateRequest;
+import com.ince.gigalike.model.entity.Blog;
 import com.ince.gigalike.model.entity.User;
+import com.ince.gigalike.model.vo.UserVO;
+import com.ince.gigalike.service.BlogService;
 import com.ince.gigalike.service.UserService;
 import com.ince.gigalike.utils.ResultUtils;
 import jakarta.annotation.Resource;
@@ -10,10 +19,9 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import jakarta.validation.Valid;
+import org.springframework.beans.BeanUtils;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
@@ -21,10 +29,18 @@ public class UserController {
     @Resource
     private UserService userService;
 
-    @GetMapping("/login")
-    public BaseResponse<User> login(long userId, HttpServletRequest request) {
-        User user = userService.getById(userId);
-        request.getSession().setAttribute(UserConstant.LOGIN_USER, user);
+    @Resource
+    private BlogService blogService;
+
+    @PostMapping("/register")
+    public BaseResponse<User> userRegister(@RequestBody @Valid UserRegisterRequest userRegisterRequest) {
+        User user = userService.userRegister(userRegisterRequest);
+        return ResultUtils.success(user);
+    }
+
+    @PostMapping("/login")
+    public BaseResponse<User> userLogin(@RequestBody @Valid UserLoginRequest userLoginRequest, HttpServletRequest request) {
+        User user = userService.userLogin(userLoginRequest, request);
         return ResultUtils.success(user);
     }
 
@@ -56,4 +72,50 @@ public class UserController {
         return ResultUtils.success("退出登录成功");
     }
 
+    /**
+     * 获取当前登录用户信息（脱敏）
+     */
+    @GetMapping("/current")
+    public BaseResponse<UserVO> getCurrentUser(HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(loginUser, userVO);
+        return ResultUtils.success(userVO);
+    }
+
+    /**
+     * 获取当前用户发布的博客
+     */
+    @GetMapping("/blogs")
+    public BaseResponse<Page<Blog>> getCurrentUserBlogs(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "1") long current,
+            @RequestParam(defaultValue = "10") long pageSize) {
+        // 获取当前登录用户
+        User loginUser = userService.getLoginUser(request);
+        
+        // 创建分页查询条件
+        Page<Blog> page = new Page<>(current, pageSize);
+        QueryWrapper<Blog> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userId", loginUser.getId());
+        queryWrapper.orderByDesc("createTime");
+        
+        // 执行分页查询
+        Page<Blog> blogPage = blogService.page(page, queryWrapper);
+        return ResultUtils.success(blogPage);
+    }
+
+    @PostMapping("/update/password")
+    public BaseResponse<User> updatePassword(@RequestBody @Valid UserUpdatePasswordRequest updatePasswordRequest,
+                                           HttpServletRequest request) {
+        User user = userService.updatePassword(updatePasswordRequest, request);
+        return ResultUtils.success(user);
+    }
+
+    @PostMapping("/update")
+    public BaseResponse<User> updateUserInfo(@RequestBody @Valid UserUpdateRequest updateRequest,
+                                           HttpServletRequest request) {
+        User user = userService.updateUserInfo(updateRequest, request);
+        return ResultUtils.success(user);
+    }
 }
