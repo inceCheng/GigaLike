@@ -74,7 +74,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog>
                     blogVO.setHasThumb(blogIdHasThumbMap.get(blog.getId()));
                     return blogVO;
                 })
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private BlogVO getBlogVO(Blog blog, User loginUser) {

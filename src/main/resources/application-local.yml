@@ -39,10 +39,12 @@ spring:
           min-idle: 0
   session:
     store-type: redis # 明确指定存储类型为 Redis
-    timeout: 1800s  # 30分钟
+    timeout: 1800  # 30分钟，单位是秒
     redis:
-      flush-mode: on_save
+      flush-mode: immediate # 改为immediate，实现实时刷新
       namespace: spring:session
+      cleanup-cron: 0 * * * * * # 每分钟清理过期会话
+    save-mode: always # 总是保存session，确保更新最后访问时间
 
 
 # mybatis-plus
