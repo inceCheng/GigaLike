@@ -7,6 +7,9 @@ server:
   port: 8123
   servlet:
     context-path: /api
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
   forward-headers-strategy: framework
   # 添加Tomcat配置
   tomcat:

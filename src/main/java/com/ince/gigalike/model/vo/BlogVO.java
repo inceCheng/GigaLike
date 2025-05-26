@@ -3,6 +3,7 @@ package com.ince.gigalike.model.vo;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class BlogVO {
@@ -38,5 +39,15 @@ public class BlogVO {
      * 是否已点赞
      */
     private Boolean hasThumb;
+
+    /**
+     * 作者信息
+     */
+    private UserVO author;
+
+    /**
+     * 话题标签列表
+     */
+    private List<TopicVO> topics;
 
 }

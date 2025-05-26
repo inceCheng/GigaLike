@@ -1,5 +1,6 @@
 package com.ince.gigalike.service;
 
+import com.ince.gigalike.model.dto.BlogCreateRequest;
 import com.ince.gigalike.model.entity.Blog;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ince.gigalike.model.vo.BlogVO;
@@ -14,9 +15,24 @@ import java.util.List;
 */
 public interface BlogService extends IService<Blog> {
 
+    /**
+     * 创建博客（包含话题标签）
+     */
+    Long createBlog(BlogCreateRequest blogCreateRequest, HttpServletRequest request);
+
+    /**
+     * 根据ID获取博客VO（包含话题信息）
+     */
     BlogVO getBlogVOById(long blogId, HttpServletRequest request);
 
+    /**
+     * 批量获取博客VO列表（包含话题信息）
+     */
     List<BlogVO> getBlogVOList(List<Blog> blogList, HttpServletRequest request);
 
+    /**
+     * 更新博客话题标签
+     */
+    Boolean updateBlogTopics(Long blogId, List<String> topicNames, HttpServletRequest request);
 
 }

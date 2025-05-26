@@ -2,11 +2,14 @@ package com.ince.gigalike.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.ince.gigalike.interceptor.SessionCookieInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -33,13 +36,20 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     @Bean
+    @Primary
     public ObjectMapper objectMapper() {
-        JavaTimeModule module = new JavaTimeModule();
+        // 时间模块配置
+        JavaTimeModule timeModule = new JavaTimeModule();
         LocalDateTimeSerializer localDateTimeSerializer = new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN));
-        module.addSerializer(LocalDateTime.class, localDateTimeSerializer);
+        timeModule.addSerializer(LocalDateTime.class, localDateTimeSerializer);
+
+        // Long类型序列化模块配置（解决JavaScript数字精度问题）
+        SimpleModule longModule = new SimpleModule();
+        longModule.addSerializer(Long.class, ToStringSerializer.instance);
+        longModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
 
         return Jackson2ObjectMapperBuilder.json()
-                .modules(module)
+                .modules(timeModule, longModule)  // 注册两个模块
                 .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .timeZone(TimeZone.getTimeZone("Asia/Shanghai"))
                 .build();

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ince.gigalike.mapper.BlogTopicMapper">
+
+    <!-- 批量插入博客话题关联 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO blog_topics (blog_id, topic_id, create_time)
+        VALUES
+        <foreach collection="blogTopics" item="item" separator=",">
+            (#{item.blogId}, #{item.topicId}, #{item.createTime})
+        </foreach>
+    </insert>
+
+</mapper> 
