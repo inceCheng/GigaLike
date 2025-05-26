@@ -1,5 +1,6 @@
 package com.ince.gigalike.controller;
 
+import com.ince.gigalike.annotation.AuthCheck;
 import com.ince.gigalike.common.BaseResponse;
 import com.ince.gigalike.model.dto.DoThumbRequest;
 import com.ince.gigalike.service.ThumbService;
@@ -26,6 +27,7 @@ public class ThumbController {
      * @return
      */
     @PostMapping("/do")
+    @AuthCheck(mustLogin = true)
     public BaseResponse<Boolean> doThumb(@RequestBody DoThumbRequest doThumbRequest, HttpServletRequest request) throws PulsarClientException {
         Boolean success = thumbService.doThumb(doThumbRequest, request);
         return ResultUtils.success(success);
@@ -39,6 +41,7 @@ public class ThumbController {
      * @return
      */
     @PostMapping("/undo")
+    @AuthCheck(mustLogin = true)
     public BaseResponse<Boolean> undoThumb(@RequestBody DoThumbRequest doThumbRequest, HttpServletRequest request) throws PulsarClientException {
         Boolean success = thumbService.undoThumb(doThumbRequest, request);
         return ResultUtils.success(success);

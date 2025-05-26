@@ -2,6 +2,7 @@ package com.ince.gigalike.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ince.gigalike.annotation.AuthCheck;
 import com.ince.gigalike.common.BaseResponse;
 import com.ince.gigalike.constant.UserConstant;
 import com.ince.gigalike.model.dto.UserLoginRequest;
@@ -76,6 +77,7 @@ public class UserController {
      * 获取当前登录用户信息（脱敏）
      */
     @GetMapping("/current")
+    @AuthCheck(mustLogin = true)
     public BaseResponse<UserVO> getCurrentUser(HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         UserVO userVO = new UserVO();
@@ -87,6 +89,7 @@ public class UserController {
      * 获取当前用户发布的博客
      */
     @GetMapping("/blogs")
+    @AuthCheck(mustLogin = true)
     public BaseResponse<Page<Blog>> getCurrentUserBlogs(
             HttpServletRequest request,
             @RequestParam(defaultValue = "1") long current,
@@ -106,6 +109,7 @@ public class UserController {
     }
 
     @PostMapping("/update/password")
+    @AuthCheck(mustLogin = true)
     public BaseResponse<User> updatePassword(@RequestBody @Valid UserUpdatePasswordRequest updatePasswordRequest,
                                            HttpServletRequest request) {
         User user = userService.updatePassword(updatePasswordRequest, request);
@@ -113,6 +117,7 @@ public class UserController {
     }
 
     @PostMapping("/update")
+    @AuthCheck(mustLogin = true)
     public BaseResponse<User> updateUserInfo(@RequestBody @Valid UserUpdateRequest updateRequest,
                                            HttpServletRequest request) {
         User user = userService.updateUserInfo(updateRequest, request);
