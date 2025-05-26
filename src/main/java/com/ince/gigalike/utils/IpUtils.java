@@ -3,12 +3,11 @@ package com.ince.gigalike.utils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.lionsoul.ip2region.xdb.Searcher;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.util.FileCopyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.util.FileCopyUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -29,7 +28,7 @@ public class IpUtils {
             byte[] cBuff = FileCopyUtils.copyToByteArray(inputStream);
             searcher = Searcher.newWithBuffer(cBuff);
         } catch (Exception e) {
-            logger.error("Failed to create searcher: " + e.getMessage());
+            logger.error("Failed to create searcher: {}", e.getMessage());
         }
     }
 
@@ -82,12 +81,12 @@ public class IpUtils {
                 ipAddress = request.getHeader("HTTP_X_FORWARDED_FOR");
                 logger.info("HTTP_X_FORWARDED_FOR: {}", ipAddress);
             }
-            
+
             // 5. 最后才使用RemoteAddr
             if (StringUtils.isBlank(ipAddress) || UNKNOWN.equalsIgnoreCase(ipAddress)) {
                 ipAddress = request.getRemoteAddr();
                 logger.info("RemoteAddr: {}", ipAddress);
-                
+
                 // 如果是本地访问，则获取本机真实IP
                 if (LOCALHOST.equals(ipAddress) || "0:0:0:0:0:0:0:1".equals(ipAddress)) {
                     try {
@@ -101,20 +100,20 @@ public class IpUtils {
             }
 
             // 6. 处理特殊情况
-            if (StringUtils.isBlank(ipAddress) 
-                || UNKNOWN.equalsIgnoreCase(ipAddress)
-                || LOCALHOST.equals(ipAddress)
-                || "0:0:0:0:0:0:0:1".equals(ipAddress)) {
+            if (StringUtils.isBlank(ipAddress)
+                    || UNKNOWN.equalsIgnoreCase(ipAddress)
+                    || LOCALHOST.equals(ipAddress)
+                    || "0:0:0:0:0:0:0:1".equals(ipAddress)) {
                 ipAddress = "127.0.0.1";
             }
-            
+
             logger.info("Final IP Address: {}", ipAddress);
-            
+
         } catch (Exception e) {
             logger.error("Error getting IP address: {}", e.getMessage());
             ipAddress = "127.0.0.1";
         }
-        
+
         return ipAddress;
     }
 
@@ -139,7 +138,7 @@ public class IpUtils {
 
             // region格式：国家|区域|省份|城市|ISP
             String[] splitRegion = region.split("\\|");
-            
+
             // 处理中国的地址
             if ("中国".equals(splitRegion[0]) || "0".equals(splitRegion[0])) {
                 String province = splitRegion[2];
@@ -154,7 +153,7 @@ public class IpUtils {
 
             return "未知";
         } catch (Exception e) {
-            System.out.println("Failed to search ip location: " + e.getMessage());
+            logger.error("Failed to search ip location: {}", e.getMessage());
             return "未知";
         }
     }
