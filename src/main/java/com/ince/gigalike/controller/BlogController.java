@@ -1,8 +1,10 @@
 package com.ince.gigalike.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ince.gigalike.annotation.AuthCheck;
 import com.ince.gigalike.common.BaseResponse;
 import com.ince.gigalike.model.dto.BlogCreateRequest;
+import com.ince.gigalike.model.dto.BlogSearchRequest;
 import com.ince.gigalike.model.entity.Blog;
 import com.ince.gigalike.model.vo.BlogVO;
 import com.ince.gigalike.model.vo.TopicVO;
@@ -96,6 +98,17 @@ public class BlogController {
         // 获取前10个热门话题
         List<TopicVO> hotTopics = topicService.getHotTopics(10, request);
         return ResultUtils.success(hotTopics);
+    }
+
+    /**
+     * 搜索博客
+     */
+    @PostMapping("/search")
+    @Operation(summary = "搜索博客", description = "根据关键词搜索博客，支持搜索标题、内容、话题，支持分页和排序")
+    public BaseResponse<Page<BlogVO>> searchBlogs(@RequestBody @Valid BlogSearchRequest searchRequest,
+                                                 HttpServletRequest request) {
+        Page<BlogVO> blogPage = blogService.searchBlogs(searchRequest, request);
+        return ResultUtils.success(blogPage);
     }
 
 }

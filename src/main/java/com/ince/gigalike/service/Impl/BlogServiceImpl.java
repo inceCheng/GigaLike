@@ -3,6 +3,7 @@ package com.ince.gigalike.service.Impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ince.gigalike.common.PageRequest;
 import com.ince.gigalike.constant.ThumbConstant;
@@ -10,6 +11,7 @@ import com.ince.gigalike.enums.ErrorCode;
 import com.ince.gigalike.exception.BusinessException;
 import com.ince.gigalike.mapper.BlogTopicMapper;
 import com.ince.gigalike.model.dto.BlogCreateRequest;
+import com.ince.gigalike.model.dto.BlogSearchRequest;
 import com.ince.gigalike.model.entity.Blog;
 import com.ince.gigalike.model.entity.BlogTopic;
 import com.ince.gigalike.model.entity.Thumb;
@@ -341,6 +343,70 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog>
         }
         
         return null;
+    }
+
+    @Override
+    public Page<BlogVO> searchBlogs(BlogSearchRequest searchRequest, HttpServletRequest request) {
+        // 参数校验
+        if (searchRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "搜索请求不能为空");
+        }
+
+        String keyword = searchRequest.getKeyword();
+        if (StringUtils.isBlank(keyword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "搜索关键词不能为空");
+        }
+
+        // 创建分页对象
+        Page<Blog> page = new Page<>(searchRequest.getCurrent(), searchRequest.getPageSize());
+
+        // 构建查询条件
+        QueryWrapper<Blog> queryWrapper = new QueryWrapper<>();
+        
+        // 搜索标题和内容
+        queryWrapper.and(wrapper -> 
+            wrapper.like("title", keyword)
+                   .or()
+                   .like("content", keyword)
+        );
+
+        // 搜索话题 - 通过子查询
+        queryWrapper.or(wrapper -> 
+            wrapper.exists("SELECT 1 FROM blog_topics bt " +
+                          "INNER JOIN topics t ON bt.topic_id = t.id " +
+                          "WHERE bt.blog_id = blog.id AND t.name LIKE {0}", "%" + keyword + "%")
+        );
+
+        // 排序
+        String sortField = searchRequest.getSortField();
+        String sortOrder = searchRequest.getSortOrder();
+        
+        if (StringUtils.isNotBlank(sortField)) {
+            // 验证排序字段
+            if (!"createTime".equals(sortField) && !"thumbCount".equals(sortField)) {
+                sortField = "createTime"; // 默认按创建时间排序
+            }
+            
+            if ("asc".equals(sortOrder)) {
+                queryWrapper.orderByAsc(sortField);
+            } else {
+                queryWrapper.orderByDesc(sortField);
+            }
+        } else {
+            queryWrapper.orderByDesc("createTime");
+        }
+
+        // 执行查询
+        Page<Blog> blogPage = this.page(page, queryWrapper);
+
+        // 转换为VO
+        Page<BlogVO> blogVOPage = new Page<>();
+        BeanUtils.copyProperties(blogPage, blogVOPage, "records");
+
+        List<BlogVO> blogVOList = this.getBlogVOList(blogPage.getRecords(), request);
+        blogVOPage.setRecords(blogVOList);
+
+        return blogVOPage;
     }
 }
 

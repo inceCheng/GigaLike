@@ -1,6 +1,8 @@
 package com.ince.gigalike.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ince.gigalike.model.dto.BlogCreateRequest;
+import com.ince.gigalike.model.dto.BlogSearchRequest;
 import com.ince.gigalike.model.entity.Blog;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ince.gigalike.model.vo.BlogVO;
@@ -39,5 +41,10 @@ public interface BlogService extends IService<Blog> {
      * 根据话题ID查询博客列表
      */
     List<Blog> getBlogsByTopicId(Long topicId);
+
+    /**
+     * 搜索博客（支持标题、内容、话题模糊查找）
+     */
+    Page<BlogVO> searchBlogs(BlogSearchRequest searchRequest, HttpServletRequest request);
 
 }
