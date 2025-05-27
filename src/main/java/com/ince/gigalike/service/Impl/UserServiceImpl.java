@@ -11,8 +11,11 @@ import com.ince.gigalike.model.dto.UserUpdatePasswordRequest;
 import com.ince.gigalike.model.dto.UserUpdateRequest;
 import com.ince.gigalike.model.entity.User;
 import com.ince.gigalike.service.UserService;
+import com.ince.gigalike.service.CaptchaService;
+import com.ince.gigalike.service.EmailService;
 import com.ince.gigalike.mapper.UserMapper;
 import com.ince.gigalike.utils.IpUtils;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -30,42 +33,55 @@ import java.util.Date;
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
+    
+    @Resource
+    private CaptchaService captchaService;
+    
+    @Resource
+    private EmailService emailService;
 
     @Override
     public User userLogin(UserLoginRequest userLoginRequest, HttpServletRequest request) {
         String username = userLoginRequest.getUsername();
         String password = userLoginRequest.getPassword();
+        String captchaCode = userLoginRequest.getCaptchaCode();
+        String captchaId = userLoginRequest.getCaptchaId();
 
         // 1. 校验参数
-        if (StringUtils.isAnyBlank(username, password)) {
+        if (StringUtils.isAnyBlank(username, password, captchaCode, captchaId)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
+        
+        // 2. 验证验证码
+        boolean captchaValid = captchaService.verifyCaptcha(captchaId, captchaCode);
+        if (!captchaValid) {
+            throw new BusinessException(ErrorCode.CAPTCHA_ERROR);
+        }
 
-        // 2. 加密密码
+        // 3. 加密密码
         String encryptPassword = DigestUtils.md5DigestAsHex(password.getBytes(StandardCharsets.UTF_8));
 
-        // 3. 查询用户是否存在
+        // 4. 查询用户是否存在
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
         queryWrapper.eq("password", encryptPassword);
         User user = this.getOne(queryWrapper);
 
-        // 4. 用户不存在或密码错误
+        // 5. 用户不存在或密码错误
         if (user == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名或密码错误");
         }
 
-
-        // 5. 获取IP地址和归属地
+        // 6. 获取IP地址和归属地
         String ipAddress = IpUtils.getIpAddress(request);
         String ipLocation = IpUtils.getIpLocation(ipAddress);
 
-        // 6. 更新用户信息
+        // 7. 更新用户信息
         user.setLastLoginAt(new Date());
         user.setLastLoginIp(ipAddress);
         user.setLastLoginIpLocation(ipLocation);
 
-        // 7. 记录用户的登录状态
+        // 8. 记录用户的登录状态
         request.getSession().setAttribute(UserConstant.LOGIN_USER, user);
 
         this.updateById(user);
@@ -77,11 +93,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String username = userRegisterRequest.getUsername();
         String password = userRegisterRequest.getPassword();
         String confirmPassword = userRegisterRequest.getConfirmPassword();
+        String email = userRegisterRequest.getEmail();
+        String emailCode = userRegisterRequest.getEmailCode();
+        String captchaCode = userRegisterRequest.getCaptchaCode();
+        String captchaId = userRegisterRequest.getCaptchaId();
 
         // 1. 校验参数
-        if (StringUtils.isAnyBlank(username, password, confirmPassword)) {
+        if (StringUtils.isAnyBlank(username, password, confirmPassword, email, emailCode, captchaCode, captchaId)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
+        
+        // 2. 验证图形验证码
+        boolean captchaValid = captchaService.verifyCaptcha(captchaId, captchaCode);
+        if (!captchaValid) {
+            throw new BusinessException(ErrorCode.CAPTCHA_ERROR, "图形验证码错误");
+        }
+        
+        // 3. 验证邮箱验证码
+        boolean emailCodeValid = emailService.verifyEmailCode(email, emailCode);
+        if (!emailCodeValid) {
+            throw new BusinessException(ErrorCode.CAPTCHA_ERROR, "邮箱验证码错误");
+        }
+        // 4. 校验其他参数
         if (username.length() < 4 || username.length() > 20) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名长度必须在4-20个字符之间");
         }
@@ -92,27 +125,36 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入的密码不一致");
         }
 
-        // 2. 校验用户名是否重复
+        // 5. 校验用户名是否重复
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
         long count = this.count(queryWrapper);
         if (count > 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名已存在");
         }
+        
+        // 6. 校验邮箱是否已被使用
+        QueryWrapper<User> emailQueryWrapper = new QueryWrapper<>();
+        emailQueryWrapper.eq("email", email);
+        long emailCount = this.count(emailQueryWrapper);
+        if (emailCount > 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "该邮箱已被注册");
+        }
 
-        // 3. 加密密码
+        // 7. 加密密码
         String encryptPassword = DigestUtils.md5DigestAsHex(password.getBytes(StandardCharsets.UTF_8));
 
-        // 4. 创建用户
+        // 8. 创建用户
         User user = new User();
         user.setUsername(username);
         user.setPassword(encryptPassword);
+        user.setEmail(email);
         user.setStatus("ACTIVE");
         user.setRole("USER");
         user.setCreateTime(new Date());
         user.setUpdateTime(new Date());
 
-        // 5. 保存用户
+        // 9. 保存用户
         boolean saveResult = this.save(user);
         if (!saveResult) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");

@@ -32,6 +32,18 @@ spring:
       password: xxx
       timeout: 5000
       port: 6379
+  # 邮件配置
+  mail:
+    host: smtp.qq.com  # 邮件服务器地址，QQ邮箱为smtp.qq.com，163邮箱为smtp.163.com
+    port: 587  # 端口号，QQ邮箱为587，163邮箱为25
+    username: your_email@qq.com  # 发送方邮箱
+    password: your_email_auth_code  # 邮箱授权码（不是邮箱密码）
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 # mybatis-plus
 mybatis-plus:
   configuration:
