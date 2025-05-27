@@ -24,7 +24,7 @@ public class BusinessException extends RuntimeException {
     }
 
     public BusinessException(ErrorCode errorCode, String description) {
-        super(errorCode.getMessage());
+        super(description);  // 使用自定义描述作为异常消息
         this.code = errorCode.getCode();
         this.description = description;
     }
