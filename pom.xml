@@ -177,6 +177,13 @@
                         </exclude>
                     </excludes>
                     <mainClass>com.ince.gigalike.GigaLikeApplication</mainClass>
+                    <!-- 添加JVM参数解决Pulsar在Java 17+环境下的模块访问权限问题 -->
+                    <jvmArguments>
+                        --add-opens java.base/sun.net=ALL-UNNAMED
+                        --add-opens java.base/java.lang=ALL-UNNAMED
+                        --add-opens java.base/java.net=ALL-UNNAMED
+                        --add-opens java.base/java.util=ALL-UNNAMED
+                    </jvmArguments>
                 </configuration>
                 <executions>
                     <execution>

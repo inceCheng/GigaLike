@@ -52,7 +52,12 @@ public class CosConfig {
         Region regionObj = new Region(region);
         ClientConfig clientConfig = new ClientConfig(regionObj);
         
-        // 3 生成 cos 客户端
+        // 3 设置超时时间为4秒（4000毫秒）
+        clientConfig.setConnectionTimeout(4000);  // 连接超时时间
+        clientConfig.setSocketTimeout(4000);      // 读取超时时间
+        clientConfig.setConnectionRequestTimeout(4000); // 从连接池获取连接的超时时间
+        
+        // 4 生成 cos 客户端
         return new COSClient(cred, clientConfig);
     }
 } 

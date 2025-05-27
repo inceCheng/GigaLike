@@ -51,9 +51,9 @@ public class FileUploadServiceImpl implements FileUploadService {
     );
 
     /**
-     * 最大文件大小 5MB
+     * 最大文件大小 10MB
      */
-    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
 
     @Override
     public String uploadBlogImage(MultipartFile file, Long userId, Long blogId, String title) {
@@ -78,7 +78,7 @@ public class FileUploadServiceImpl implements FileUploadService {
 
         // 3. 文件大小验证
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件大小不能超过5MB");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件大小不能超过10MB");
         }
 
         // 4. 获取文件扩展名

@@ -3,13 +3,16 @@ spring:
     active: local  # 默认使用本地配置
   application:
     name: GigaChat
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 10MB      # 单个文件最大10MB
+      max-request-size: 20MB   # 请求最大20MB
+
 server:
   port: 8123
   servlet:
     context-path: /api
-    multipart:
-      max-file-size: 5MB
-      max-request-size: 10MB
   forward-headers-strategy: framework
   # 添加Tomcat配置
   tomcat:
@@ -19,6 +22,9 @@ server:
       port-header: X-Forwarded-Port
       host-header: X-Forwarded-Host
       internal-proxies: 127\\.0\\.0\\.1
+    # 设置Tomcat的文件上传限制
+    max-http-form-post-size: 10MB
+    max-swallow-size: 10MB
 # springdoc-openapi
 springdoc:
   swagger-ui:
