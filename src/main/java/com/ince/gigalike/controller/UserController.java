@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ince.gigalike.annotation.AuthCheck;
 import com.ince.gigalike.common.BaseResponse;
 import com.ince.gigalike.constant.UserConstant;
+import com.ince.gigalike.enums.ErrorCode;
+import com.ince.gigalike.exception.BusinessException;
 import com.ince.gigalike.model.dto.UserLoginRequest;
 import com.ince.gigalike.model.dto.UserRegisterRequest;
 import com.ince.gigalike.model.dto.UserUpdatePasswordRequest;
@@ -79,9 +81,18 @@ public class UserController {
     @GetMapping("/current")
     @AuthCheck(mustLogin = true)
     public BaseResponse<UserVO> getCurrentUser(HttpServletRequest request) {
-        User loginUser = userService.getLoginUser(request);
+        // 从Session中获取登录用户的基本信息（主要是获取用户ID）
+        User sessionUser = userService.getLoginUser(request);
+        
+        // 根据用户ID从数据库查询最新的用户信息
+        User currentUser = userService.getById(sessionUser.getId());
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+        }
+        
+        // 转换为VO对象（脱敏）
         UserVO userVO = new UserVO();
-        BeanUtils.copyProperties(loginUser, userVO);
+        BeanUtils.copyProperties(currentUser, userVO);
         return ResultUtils.success(userVO);
     }
 
