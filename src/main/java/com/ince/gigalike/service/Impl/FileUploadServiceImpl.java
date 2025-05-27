@@ -121,6 +121,68 @@ public class FileUploadServiceImpl implements FileUploadService {
     }
 
     @Override
+    public String uploadUserAvatar(MultipartFile file, Long userId) {
+        // 1. 参数验证
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "头像文件不能为空");
+        }
+
+        if (userId == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户ID不能为空");
+        }
+
+        // 2. 文件类型验证
+        String contentType = file.getContentType();
+        if (!ALLOWED_IMAGE_TYPES.contains(contentType)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "不支持的图片格式，仅支持：jpg、png、gif、webp");
+        }
+
+        // 3. 文件大小验证（头像限制为5MB）
+        long maxAvatarSize = 5 * 1024 * 1024; // 5MB
+        if (file.getSize() > maxAvatarSize) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "头像文件大小不能超过5MB");
+        }
+
+        // 4. 获取文件扩展名
+        String originalFilename = file.getOriginalFilename();
+        String extension = getFileExtension(originalFilename);
+        if (!ALLOWED_EXTENSIONS.contains(extension.toLowerCase())) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "不支持的文件扩展名");
+        }
+
+        // 5. 生成文件名和路径
+        String fileName = generateFileName() + extension;
+        String filePath = generateAvatarFilePath(userId, fileName);
+
+        try {
+            // 6. 设置对象元数据
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(file.getSize());
+            metadata.setContentType(contentType);
+            metadata.setCacheControl("max-age=31536000"); // 缓存一年
+
+            // 7. 创建上传请求
+            PutObjectRequest putObjectRequest = new PutObjectRequest(
+                    cosConfig.getBucketName(),
+                    filePath,
+                    file.getInputStream(),
+                    metadata
+            );
+
+            // 8. 执行上传
+            PutObjectResult result = cosClient.putObject(putObjectRequest);
+            log.info("头像上传成功，ETag: {}, 路径: {}", result.getETag(), filePath);
+
+            // 9. 返回访问URL
+            return generateAccessUrl(filePath);
+
+        } catch (IOException e) {
+            log.error("头像上传失败", e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "头像上传失败");
+        }
+    }
+
+    @Override
     public Boolean deleteFile(String fileUrl) {
         if (StringUtils.isBlank(fileUrl)) {
             return false;
@@ -226,6 +288,14 @@ public class FileUploadServiceImpl implements FileUploadService {
         }
         int lastDotIndex = filename.lastIndexOf(".");
         return lastDotIndex > 0 ? filename.substring(lastDotIndex) : "";
+    }
+
+    /**
+     * 生成头像文件路径
+     */
+    private String generateAvatarFilePath(Long userId, String fileName) {
+        // 构建路径：avatars/userId/fileName
+        return String.format("avatars/%d/%s", userId, fileName);
     }
 
     /**

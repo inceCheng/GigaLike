@@ -19,6 +19,15 @@ public interface FileUploadService {
     String uploadBlogImage(MultipartFile file, Long userId, Long blogId, String title);
 
     /**
+     * 上传用户头像到腾讯云COS
+     * 
+     * @param file 头像文件
+     * @param userId 用户ID
+     * @return 头像访问URL
+     */
+    String uploadUserAvatar(MultipartFile file, Long userId);
+
+    /**
      * 删除COS中的文件
      * 
      * @param fileUrl 文件URL
