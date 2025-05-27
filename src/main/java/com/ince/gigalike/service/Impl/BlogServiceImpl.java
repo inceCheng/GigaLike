@@ -267,6 +267,14 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog>
         return true;
     }
 
+    @Override
+    public List<Blog> getBlogsByTopicId(Long topicId) {
+        if (topicId == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "话题ID不能为空");
+        }
+        return this.baseMapper.selectBlogsByTopicId(topicId);
+    }
+
     private BlogVO getBlogVO(Blog blog, User loginUser, HttpServletRequest request) {
         BlogVO blogVO = new BlogVO();
         BeanUtils.copyProperties(blog, blogVO);

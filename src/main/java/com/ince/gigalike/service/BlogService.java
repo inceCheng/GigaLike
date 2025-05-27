@@ -35,4 +35,9 @@ public interface BlogService extends IService<Blog> {
      */
     Boolean updateBlogTopics(Long blogId, List<String> topicNames, HttpServletRequest request);
 
+    /**
+     * 根据话题ID查询博客列表
+     */
+    List<Blog> getBlogsByTopicId(Long topicId);
+
 }

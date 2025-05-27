@@ -266,14 +266,16 @@
 **响应数据类型**:`*/*`
 
 
-**接口描述**:<p>获取所有博客列表，包含话题标签信息</p>
+**接口描述**:<p>获取博客列表，支持根据话题筛选，包含话题标签信息</p>
 
 
 
 **请求参数**:
 
 
-暂无
+| 参数名称 | 参数说明 | 请求类型 | 是否必须 | 数据类型       | schema |
+| -------- | -------- | -------- | -------- | -------------- | ------ |
+| topicId  | 话题ID   | query    | false    | integer(int64) |        |
 
 
 **响应状态**:
@@ -463,6 +465,123 @@
 {
 	"code": 0,
 	"data": true,
+	"message": ""
+}
+```
+
+
+## 获取热门话题
+
+
+**接口地址**:`/api/blog/hot-topics`
+
+
+**请求方式**:`GET`
+
+
+**请求数据类型**:`application/x-www-form-urlencoded`
+
+
+**响应数据类型**:`*/*`
+
+
+**接口描述**:<p>获取当前10大热门话题，包含话题名称和ID</p>
+
+
+
+**请求参数**:
+
+
+暂无
+
+
+**响应状态**:
+
+
+| 状态码 | 说明 | schema                  |
+| ------ | ---- | ----------------------- |
+| 200    | OK   | BaseResponseListTopicVO |
+
+
+**响应参数**:
+
+
+| 参数名称                                    | 参数说明 | 类型              | schema         |
+| ------------------------------------------- | -------- | ----------------- | -------------- |
+| code                                        |          | integer(int32)    | integer(int32) |
+| data                                        |          | array             | TopicVO        |
+| &emsp;&emsp;id                              |          | integer(int64)    |                |
+| &emsp;&emsp;name                            |          | string            |                |
+| &emsp;&emsp;description                     |          | string            |                |
+| &emsp;&emsp;coverImage                      |          | string            |                |
+| &emsp;&emsp;color                           |          | string            |                |
+| &emsp;&emsp;status                          |          | string            |                |
+| &emsp;&emsp;postCount                       |          | integer(int32)    |                |
+| &emsp;&emsp;followCount                     |          | integer(int32)    |                |
+| &emsp;&emsp;isOfficial                      |          | boolean           |                |
+| &emsp;&emsp;isFollowed                      |          | boolean           |                |
+| &emsp;&emsp;createTime                      |          | string(date-time) |                |
+| &emsp;&emsp;creator                         |          | UserVO            | UserVO         |
+| &emsp;&emsp;&emsp;&emsp;id                  |          | integer           |                |
+| &emsp;&emsp;&emsp;&emsp;username            |          | string            |                |
+| &emsp;&emsp;&emsp;&emsp;email               |          | string            |                |
+| &emsp;&emsp;&emsp;&emsp;displayName         |          | string            |                |
+| &emsp;&emsp;&emsp;&emsp;avatarUrl           |          | string            |                |
+| &emsp;&emsp;&emsp;&emsp;bio                 |          | string            |                |
+| &emsp;&emsp;&emsp;&emsp;status              |          | object            |                |
+| &emsp;&emsp;&emsp;&emsp;emailVerified       |          | integer           |                |
+| &emsp;&emsp;&emsp;&emsp;role                |          | object            |                |
+| &emsp;&emsp;&emsp;&emsp;locale              |          | string            |                |
+| &emsp;&emsp;&emsp;&emsp;timezone            |          | string            |                |
+| &emsp;&emsp;&emsp;&emsp;lastLoginIpLocation |          | string            |                |
+| message                                     |          | string            |                |
+
+
+**响应示例**:
+
+```javascript
+{
+	"code": 0,
+	"data": [
+		{
+			"id": 11,
+			"name": "穿搭",
+			"description": "时尚穿搭分享，搭配技巧与风格展示",
+			"coverImage": "https://cdn.example.com/topics/fashion.jpg",
+			"color": "#ff69b4",
+			"status": "active",
+			"postCount": 0,
+			"followCount": 0,
+			"isOfficial": true,
+			"isFollowed": false,
+			"createTime": "2025-01-27T10:30:00",
+			"creator": {
+				"id": 1,
+				"username": "admin",
+				"displayName": "管理员",
+				"avatarUrl": "https://cdn.example.com/avatar/admin.jpg"
+			}
+		},
+		{
+			"id": 12,
+			"name": "美食",
+			"description": "美食制作、餐厅推荐、烹饪技巧分享",
+			"coverImage": "https://cdn.example.com/topics/food.jpg",
+			"color": "#ff8c00",
+			"status": "active",
+			"postCount": 0,
+			"followCount": 0,
+			"isOfficial": true,
+			"isFollowed": false,
+			"createTime": "2025-01-27T10:30:00",
+			"creator": {
+				"id": 1,
+				"username": "admin",
+				"displayName": "管理员",
+				"avatarUrl": "https://cdn.example.com/avatar/admin.jpg"
+			}
+		}
+	],
 	"message": ""
 }
 ```

@@ -5,7 +5,9 @@ import com.ince.gigalike.common.BaseResponse;
 import com.ince.gigalike.model.dto.BlogCreateRequest;
 import com.ince.gigalike.model.entity.Blog;
 import com.ince.gigalike.model.vo.BlogVO;
+import com.ince.gigalike.model.vo.TopicVO;
 import com.ince.gigalike.service.BlogService;
+import com.ince.gigalike.service.TopicService;
 import com.ince.gigalike.utils.ResultUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,6 +24,9 @@ import java.util.List;
 public class BlogController {
     @Resource
     private BlogService blogService;
+    
+    @Resource
+    private TopicService topicService;
 
     /**
      * 创建博客（包含话题标签）
@@ -47,15 +52,24 @@ public class BlogController {
 
     /**
      * 博客列表
-     * 这部分不是我们项目的核心，所以这里不做各种条件的查询，仅把 blog 表中的数据查出返回给前端展示即可。
+     * 支持根据话题进行筛选，话题参数为可选项
      *
+     * @param topicId 话题ID（可选）
      * @param request
      * @return
      */
     @GetMapping("/list")
-    @Operation(summary = "获取博客列表", description = "获取所有博客列表，包含话题标签信息")
-    public BaseResponse<List<BlogVO>> list(HttpServletRequest request) {
-        List<Blog> blogList = blogService.list();
+    @Operation(summary = "获取博客列表", description = "获取博客列表，支持根据话题筛选，包含话题标签信息")
+    public BaseResponse<List<BlogVO>> list(@RequestParam(required = false) Long topicId,
+                                          HttpServletRequest request) {
+        List<Blog> blogList;
+        if (topicId != null) {
+            // 根据话题查询博客列表
+            blogList = blogService.getBlogsByTopicId(topicId);
+        } else {
+            // 查询所有博客
+            blogList = blogService.list();
+        }
         List<BlogVO> blogVOList = blogService.getBlogVOList(blogList, request);
         return ResultUtils.success(blogVOList);
     }
@@ -71,6 +85,17 @@ public class BlogController {
                                                  HttpServletRequest request) {
         Boolean result = blogService.updateBlogTopics(blogId, topicNames, request);
         return ResultUtils.success(result);
+    }
+
+    /**
+     * 获取热门话题
+     */
+    @GetMapping("/hot-topics")
+    @Operation(summary = "获取热门话题", description = "获取当前10大热门话题，包含话题名称和ID")
+    public BaseResponse<List<TopicVO>> getHotTopics(HttpServletRequest request) {
+        // 获取前10个热门话题
+        List<TopicVO> hotTopics = topicService.getHotTopics(10, request);
+        return ResultUtils.success(hotTopics);
     }
 
 }
