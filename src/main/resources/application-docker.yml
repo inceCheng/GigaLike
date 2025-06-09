@@ -1,0 +1,74 @@
+# Docker 环境配置
+spring:
+  # DataSource Config - 连接到 Docker Compose 中的 MySQL 服务
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://mysql:3306/gigalikedb?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      filters: stat,wall,log4j
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+
+  data:
+    # Redis 配置 - 连接到 Docker Compose 中的 Redis 服务
+    redis:
+      database: 0
+      host: redis
+      timeout: 10000
+      port: 6379
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1
+          max-idle: 8
+          min-idle: 0
+
+  session:
+    store-type: redis
+    timeout: 1800  # 30分钟，单位是秒
+    redis:
+      flush-mode: immediate
+      namespace: spring:session
+      cleanup-cron: 0 * * * * *
+    save-mode: always
+
+  # Pulsar 配置 - 连接到 Docker Compose 中的 Pulsar 服务
+  pulsar:
+    client:
+      service-url: pulsar://pulsar:6650
+    admin:
+      service-url: http://pulsar:8080
+
+  mail: 
+    host: smtp.qq.com
+    port: 587
+    username: hgchen01@qq.com
+    password: zwbqbewhpvmyjgia  # 邮箱授权码
+
+# mybatis-plus
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 腾讯云COS配置
+cos:
+  secret-id: ${COS_SECRET_ID:your-secret-id}
+  secret-key: ${COS_SECRET_KEY:your-secret-key}
+  bucket-name: gigalike-1307454348
+  region: ap-guangzhou
+  domain: https://gigalike-1307454348.cos.ap-guangzhou.myqcloud.com 

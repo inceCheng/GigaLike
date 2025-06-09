@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库服务
+  mysql:
+    image: mysql:8.0
+    container_name: gigalike-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: gigalikedb
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d  # 自动执行初始化SQL脚本
+    networks:
+      - gigalike-network
+    command: --default-authentication-plugin=mysql_native_password
+
+  # Redis 缓存服务
+  redis:
+    image: redis:7.2-alpine
+    container_name: gigalike-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - gigalike-network
+    command: redis-server --appendonly yes
+
+  # Apache Pulsar 消息队列服务
+  pulsar:
+    image: apachepulsar/pulsar:3.1.0
+    container_name: gigalike-pulsar
+    restart: unless-stopped
+    ports:
+      - "6650:6650"  # Pulsar binary protocol port
+      - "8080:8080"  # Pulsar HTTP admin port
+    volumes:
+      - pulsar_data:/pulsar/data
+    networks:
+      - gigalike-network
+    command: >
+      sh -c "
+        bin/apply-config-from-env.py conf/standalone.conf &&
+        bin/pulsar standalone
+      "
+    environment:
+      - PULSAR_MEM=-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m
+
+  # GigaLike 应用服务
+  gigalike-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gigalike-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - gigalike-network
+    depends_on:
+      - mysql
+      - redis
+      - pulsar
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - COS_SECRET_ID=${COS_SECRET_ID}
+      - COS_SECRET_KEY=${COS_SECRET_KEY}
+    env_file:
+      - .env  # 从 .env 文件加载环境变量
+    volumes:
+      - app_logs:/app/logs  # 应用日志目录
+
+# 网络配置
+networks:
+  gigalike-network:
+    driver: bridge
+
+# 数据卷配置
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  pulsar_data:
+    driver: local
+  app_logs:
+    driver: local 

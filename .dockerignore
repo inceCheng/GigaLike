@@ -1,0 +1,35 @@
+# 构建输出目录
+target/
+*.jar
+*.war
+
+# IDE 文件
+.idea/
+.vscode/
+*.iml
+
+# Git 相关
+.git/
+.gitignore
+.gitattributes
+
+# 测试文件
+test/
+
+# 文档
+doc/
+README.md
+HELP.md
+
+# 其他
+.specstory/
+.mvn/
+start.bat
+start.ps1
+*.log
+.cursorindexingignore
+
+# Docker 相关文件（避免递归复制）
+Dockerfile
+docker-compose.yml
+.dockerignore 
