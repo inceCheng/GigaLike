@@ -15,15 +15,24 @@ import com.ince.gigalike.service.CaptchaService;
 import com.ince.gigalike.service.EmailService;
 import com.ince.gigalike.mapper.UserMapper;
 import com.ince.gigalike.utils.IpUtils;
+import com.ince.gigalike.utils.DeviceUtils;
+import com.ince.gigalike.enums.NotificationTypeEnum;
+import com.ince.gigalike.listener.notification.msg.NotificationEvent;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+import org.springframework.pulsar.core.PulsarTemplate;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author inceCheng
@@ -31,6 +40,7 @@ import java.util.Date;
  * @createDate 2025-05-14 13:57:31
  */
 @Service
+@Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
     
@@ -39,6 +49,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     
     @Resource
     private EmailService emailService;
+    
+    @Resource
+    private PulsarTemplate<NotificationEvent> notificationPulsarTemplate;
 
     @Override
     public User userLogin(UserLoginRequest userLoginRequest, HttpServletRequest request) {
@@ -85,6 +98,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         request.getSession().setAttribute(UserConstant.LOGIN_USER, user);
 
         this.updateById(user);
+        
+        // 9. 发送登录成功通知
+        sendLoginSuccessNotification(user, request);
+        
         return user;
     }
 
@@ -242,6 +259,64 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         
         return loginUser;
+    }
+    
+    /**
+     * 发送登录成功通知
+     */
+    private void sendLoginSuccessNotification(User user, HttpServletRequest request) {
+        try {
+            // 获取登录时间（格式化）
+            LocalDateTime loginTime = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String loginTimeStr = loginTime.format(formatter);
+            
+            // 获取登录地点
+            String loginLocation = user.getLastLoginIpLocation();
+            
+            // 获取设备信息
+            String deviceInfo = DeviceUtils.getDeviceInfo(request);
+            
+            // 构建通知内容
+            String displayName = StringUtils.isNotBlank(user.getDisplayName()) ? user.getDisplayName() : user.getUsername();
+            String notificationContent = String.format(
+                "欢迎回来，%s！您已成功登录 GigaLike 🎉\n登录时间：%s\n登录地点：%s\n设备信息：%s",
+                displayName, loginTimeStr, loginLocation, deviceInfo
+            );
+            
+            // 准备额外数据
+            Map<String, Object> extraData = new HashMap<>();
+            extraData.put("content", notificationContent);
+            extraData.put("loginTime", loginTimeStr);
+            extraData.put("loginLocation", loginLocation);
+            extraData.put("deviceInfo", deviceInfo);
+            
+            // 创建通知事件
+            NotificationEvent notificationEvent = NotificationEvent.builder()
+                    .userId(user.getId())
+                    .senderId(null) // 系统通知，没有发送者
+                    .type(NotificationTypeEnum.SYSTEM.getCode())
+                    .relatedId(null) // 系统通知不关联具体资源
+                    .relatedType(null)
+                    .extraData(extraData)
+                    .eventTime(loginTime)
+                    .build();
+            
+            // 发送通知事件
+            notificationPulsarTemplate.sendAsync("notification-topic", notificationEvent)
+                    .exceptionally(ex -> {
+                        log.error("发送登录成功通知失败: userId={}, username={}", 
+                                user.getId(), user.getUsername(), ex);
+                        return null;
+                    });
+            
+            log.debug("发送登录成功通知: userId={}, username={}, location={}, device={}", 
+                    user.getId(), user.getUsername(), loginLocation, deviceInfo);
+                    
+        } catch (Exception e) {
+            log.error("发送登录成功通知异常: userId={}, username={}", 
+                    user.getId(), user.getUsername(), e);
+        }
     }
 }
 
